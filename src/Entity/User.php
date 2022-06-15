@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
+#[ApiResource]
+#[ORM\Table(name: '`User`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -24,6 +28,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'string')]
     private $password;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Travel::class, orphanRemoval: true)]
+    private $travels;
+
+    public function __construct()
+    {
+        $this->travels = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -112,5 +124,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Travel>
+     */
+    public function getTravels(): Collection
+    {
+        return $this->travels;
+    }
+
+    public function addTravel(Travel $travel): self
+    {
+        if (!$this->travels->contains($travel)) {
+            $this->travels[] = $travel;
+            $travel->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTravel(Travel $travel): self
+    {
+        if ($this->travels->removeElement($travel)) {
+            // set the owning side to null (unless already changed)
+            if ($travel->getUser() === $this) {
+                $travel->setUser(null);
+            }
+        }
+
+        return $this;
     }
 }

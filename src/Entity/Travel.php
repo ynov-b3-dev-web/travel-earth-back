@@ -2,14 +2,16 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\TravelRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TravelRepository::class)]
-#[ApiResource]
+#[ApiResource(), ApiFilter(SearchFilter::class, properties: ['user' => 'exact'])]
 class Travel
 {
     #[ORM\Id]
@@ -35,7 +37,7 @@ class Travel
     #[ORM\Column(type: 'date', nullable: true)]
     private $finish_date;
 
-    #[ORM\ManyToOne(targetEntity: user::class, inversedBy: 'travels')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'travels')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
